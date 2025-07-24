@@ -5,13 +5,35 @@ const { generateToken } = require('../utils/utils');
 const passport = require("passport")
 
 const googleAuth = async (req, res, next) => {
-    passport.authenticate('google-local', async (err, user, info) => {
+
+    passport.authenticate('google-jwt', async (err, user, info) => {
+
         if (err) {
-            return error({ code: http_codes.unAuthorized, data: {}, msg: err, res })
+            console.log("Authentication error:", err);
+
+            // Handle structured error objects from passport strategy
+            const errorMessage = err.message || err;
+            const errorCode = err.code || 'AUTHENTICATION_FAILED';
+
+            return error({
+                code: http_codes.unAuthorized,
+                data: {},
+                message: errorMessage,
+                extra: { errorCode },
+                res
+            })
         }
+
         if (!user) {
-            return error({ code: http_codes.unAuthorized, data: {}, msg: info.message, res })
+            const infoMessage = info?.message || "Authentication failed";
+            return error({
+                code: http_codes.unAuthorized,
+                data: {},
+                message: infoMessage,
+                res
+            })
         }
+
         const tokenData = {
             googleId: user.googleId,
             userId: user.userId,

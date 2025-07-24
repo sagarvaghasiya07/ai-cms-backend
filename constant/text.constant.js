@@ -17,8 +17,18 @@ const messages = {
     forbidden: 'Forbidden',
     unAuthorized: 'Unauthorized',
     loginSuccess: 'Login successful',
-    accessTokenRequired: 'Access token is required'
-
+    accessTokenRequired: 'Access token is required',
+    userNotFound: 'User not found',
+    accountInactive: 'Account is inactive',
+    invalidToken: 'Invalid token',
+    profileRetrieved: 'Profile retrieved successfully',
+    // Google OAuth specific messages
+    googleTokenInvalid: 'Invalid Google token. Please try signing in again.',
+    googleTokenExpired: 'Google token has expired. Please sign in again.',
+    googleAccessDenied: 'Access denied. Please check your Google OAuth configuration.',
+    googleConnectionError: 'Unable to connect to Google services. Please try again later.',
+    googleAuthFailed: 'Google authentication failed. Please try again.',
+    googleTokenRequired: 'Google access token is required for authentication.'
 };
 
 const schemas = {

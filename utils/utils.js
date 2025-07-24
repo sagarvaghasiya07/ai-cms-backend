@@ -11,7 +11,20 @@ const utcTime = (time) => {
     return new Date(moment.tz(currentTime, "Asia/Kolkata").tz("Atlantic/Reykjavik").format())
 };
 
+const generateRandomPublicId = (key, length = 9) => {
+    let result = '';
+    const characters = '0123456789';
+
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        result += characters[randomIndex];
+    }
+
+    return key + result;
+}
+
 module.exports = {
     generateToken,
-    utcTime
+    utcTime,
+    generateRandomPublicId
 }

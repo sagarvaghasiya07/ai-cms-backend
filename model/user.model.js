@@ -1,9 +1,14 @@
 const mongoose = require('mongoose');
 const { Schema } = require('mongoose');
 const { schemas } = require('../constant/text.constant');
-const { utcTime } = require('../utils/utils');
+const { utcTime, generateRandomPublicId } = require('../utils/utils');
 
 let userSchema = new Schema({
+    userId: {
+        type: String,
+        index: true,
+        unique: true
+    },
     name: {
         type: String,
         required: true
@@ -41,6 +46,11 @@ let userSchema = new Schema({
 // Index for email and googleId
 userSchema.index({ email: 1 });
 userSchema.index({ googleId: 1 });
+
+userSchema.pre("save", async function (next) {
+    this.userId = generateRandomPublicId("U", 9)
+    next()
+})
 
 let userModel = mongoose.model(schemas.user, userSchema);
 

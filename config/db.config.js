@@ -8,7 +8,6 @@ const db = async () => {
         console.log('Connected to MongoDB');
     } catch (err) {
         console.log('Error connecting to MongoDB', err);
-        // Continue running the server even if MongoDB connection fails
     }
 };
 

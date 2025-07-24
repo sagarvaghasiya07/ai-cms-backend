@@ -1,80 +1,108 @@
-const LocalStrategy = require('passport-local').Strategy;
+const Strategy = require('passport-strategy').Strategy;
 const userModel = require("../model/user.model");
 const passport = require("passport")
 const { messages } = require('../constant/text.constant');
 const axios = require('axios');
 
-passport.use('google-local', new LocalStrategy({ usernameField: 'accessToken', passwordField: 'optional' },
-    async function (accessToken, optional, done) {
-        try {
-            if (!accessToken) {
-                return done(null, null, { message: messages.accessTokenRequired });
-            }
-
-            // Check if it's an ID token (JWT format) or access token
-            if (accessToken.split('.').length === 3) {
-                // It's an ID token, verify it with Google
-                const response = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${accessToken}`);
-                const userInfo = response.data;
-                
-                const userDetail = await userModel.findOne({ email: userInfo.email });
-
-                if (!userDetail) {
-                    const userObj = {
-                        googleId: userInfo.sub,
-                        email: userInfo.email,
-                        profile_url: userInfo.picture,
-                        singUpType: 'google'
-                    }
-                    const newUser = await userModel(userObj).save()
-                    return done(null, newUser, {});
-                }
-                if (userDetail && userDetail?.singUpType === 'google') {
-                    const updatedDetail = await userModel.findOneAndUpdate(
-                        { userId: userDetail.userId },
-                        {
-                            $set: { googleId: userInfo.sub },
-                            $addToSet: { singUpType: 'google' }
-                        },
-                        { new: true }
-                    )
-                    return done(null, updatedDetail, {})
-                }
-                return done(null, userDetail, {});
-            } else {
-                // It's an access token, use the original logic
-                const fetchUserDetail = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`)
-                const emailDetail = fetchUserDetail.data
-
-                const userDetail = await userModel.findOne({ email: emailDetail.email });
-
-                if (!userDetail) {
-                    const userObj = {
-                        googleId: emailDetail.id,
-                        email: emailDetail.email,
-                        profile_url: emailDetail.picture,
-                        singUpType: 'google'
-                    }
-                    const newUser = await userModel(userObj).save()
-                    return done(null, newUser, {});
-                }
-                if (userDetail && userDetail?.singUpType === 'google') {
-                    const updatedDetail = await userModel.findOneAndUpdate(
-                        { userId: userDetail.userId },
-                        {
-                            $set: { googleId: emailDetail.id },
-                            $addToSet: { singUpType: 'google' }
-                        },
-                        { new: true }
-                    )
-                    return done(null, updatedDetail, {})
-                }
-                return done(null, userDetail, {});
-            }
-        } catch (e) {
-            console.log("passport config error:", e);
-            console.log("error:", e?.response?.data?.error);
-            return done(e?.response?.data?.error?.message || e.message, null, {});
-        }
+// Custom strategy for Google JWT authentication
+class GoogleJWTStrategy extends Strategy {
+    constructor(options, verify) {
+        super();
+        this.name = 'google-jwt';
+        this.verify = verify;
     }
-));
+
+    authenticate(req, options) {
+
+        // Get JWT token from request body
+        const jwtToken = req.body.accessToken;
+
+        if (!jwtToken) {
+            console.log("No JWT token provided");
+            return this.fail({ message: messages.googleTokenRequired });
+        }
+
+        // Call the verify function
+        this.verify(req, jwtToken, (err, user, info) => {
+            if (err) {
+                console.log("Strategy verification error:", err);
+                return this.fail(err);
+            }
+            if (!user) {
+                return this.fail(info);
+            }
+            return this.success(user, info);
+        });
+    }
+}
+
+// Use the custom strategy
+passport.use(new GoogleJWTStrategy({}, async function (req, jwtToken, done) {
+
+    try {
+
+        // Verify and decode the JWT token with Google
+        const response = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${jwtToken}`);
+        const userInfo = response.data;
+
+        // Find existing user by email
+        const userDetail = await userModel.findOne({ email: userInfo.email });
+        if (!userDetail) {
+            // Create new user account
+            const userObj = {
+                googleId: userInfo.sub,
+                email: userInfo.email,
+                name: userInfo.name,
+                profile_url: userInfo.picture,
+                singUpType: 'google'
+            }
+            const newUser = await userModel(userObj).save()
+            return done(null, newUser, {});
+        }
+
+        // Update existing user with Google info
+        const updatedDetail = await userModel.findOneAndUpdate(
+            { _id: userDetail._id },
+            {
+                $set: {
+                    googleId: userInfo.sub,
+                    name: userInfo.name,
+                    profile_url: userInfo.picture,
+                    singUpType: 'google',
+                    lastLogin: new Date()
+                }
+            },
+            { new: true }
+        )
+        return done(null, updatedDetail, {});
+
+    } catch (e) {
+        console.log("Full error:", e);
+
+        // Handle different types of errors with specific messages
+        if (e?.response?.status === 400) {
+            const errorMessage = e?.response?.data?.error_description || messages.googleTokenInvalid;
+            return done({ message: errorMessage, code: 'INVALID_TOKEN' }, null, {});
+        }
+
+        if (e?.response?.status === 401) {
+            return done({ message: messages.googleTokenExpired, code: 'TOKEN_EXPIRED' }, null, {});
+        }
+
+        if (e?.response?.status === 403) {
+            return done({ message: messages.googleAccessDenied, code: 'ACCESS_DENIED' }, null, {});
+        }
+
+        if (e?.code === 'ECONNREFUSED' || e?.code === 'ENOTFOUND') {
+            return done({ message: messages.googleConnectionError, code: 'CONNECTION_ERROR' }, null, {});
+        }
+
+        // Default error message
+        const errorMessage = e?.response?.data?.error_description ||
+            e?.response?.data?.error ||
+            e?.message ||
+            messages.googleAuthFailed;
+
+        return done({ message: errorMessage, code: 'AUTHENTICATION_FAILED' }, null, {});
+    }
+}));
