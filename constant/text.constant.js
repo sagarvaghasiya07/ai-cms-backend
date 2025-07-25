@@ -51,7 +51,16 @@ const messages = {
     contentRegeneratedSuccessfully: 'Content regenerated successfully',
     templateNotFound: 'Template not found',
     templateListRetrieved: 'Template list retrieved successfully',
-    statasticRetrieved: 'Statastic retrieved successfully'
+    statasticRetrieved: 'Statastic retrieved successfully',
+    authorizationHeaderRequired: 'Authorization header is required',
+    invalidTokenFormat: 'Invalid token format. Use "Bearer <token>"',
+    tokenExpired: 'Token has expired',
+    tokenSignatureInvalid: 'Invalid token signature',
+    tokenNotActive: 'Token not active yet',
+    malformedToken: 'Malformed token',
+    tokenCannotBeEmpty: 'Token cannot be empty',
+    tokenPayloadInvalid: 'Token payload is invalid or missing required fields',
+    tokenIssuedBeforePasswordChange: 'Token was issued before password change. Please login again'
 };
 
 const schemas = {
