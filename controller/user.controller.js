@@ -95,11 +95,11 @@ const statastic = async (req, res) => {
 
         // want this statsatics : 1. Total Content Generated, 2. total Content This Month, 3. total social media post generated, 4. total email generated, 5. total product description generated
         const all_stats = await Promise.allSettled([
-            contentModel.countDocuments({ userId: user.userId }),
-            contentModel.countDocuments({ userId: user.userId, createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) } }),
-            contentModel.countDocuments({ userId: user.userId, templateId: defaultTemplates.find(template => template.name === 'Social Media Post').templateId }),
-            contentModel.countDocuments({ userId: user.userId, templateId: defaultTemplates.find(template => template.name === 'Email Subject Line').templateId }),
-            contentModel.countDocuments({ userId: user.userId, templateId: defaultTemplates.find(template => template.name === 'Product Descriptions').templateId })
+            contentModel.countDocuments({ userId: user.userId, isDeleted: false }),
+            contentModel.countDocuments({ userId: user.userId, isDeleted: false, createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) } }),
+            contentModel.countDocuments({ userId: user.userId, isDeleted: false, templateId: defaultTemplates.find(template => template.name === 'Social Media Post').templateId }),
+            contentModel.countDocuments({ userId: user.userId, isDeleted: false, templateId: defaultTemplates.find(template => template.name === 'Email Subject Line').templateId }),
+            contentModel.countDocuments({ userId: user.userId, isDeleted: false, templateId: defaultTemplates.find(template => template.name === 'Product Descriptions').templateId })
         ])
 
         const totalContentGenerated = all_stats[0].status === 'fulfilled' ? all_stats[0].value : 0;
