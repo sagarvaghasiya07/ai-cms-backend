@@ -13,5 +13,6 @@ router.post('/ai/regenerate-content', authMiddleware, controller.regenerateConte
 router.get('/ai/get-content-list', authMiddleware, controller.getContentList);
 router.get('/ai/get-content-detail', authMiddleware, controller.getContentDetails);
 router.post('/ai/edit-content', authMiddleware, controller.editContent);
+router.get('/ai/delete-content', authMiddleware, controller.deleteContent);
 
 module.exports = router; 

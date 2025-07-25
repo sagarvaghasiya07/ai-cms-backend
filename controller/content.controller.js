@@ -589,7 +589,7 @@ const deleteContent = async (req, res) => {
 
         return success({
             code: http_codes.ok,
-            data: deletedContent,
+            data: {},
             message: messages.contentDeletedSuccessfully,
             res
         })
