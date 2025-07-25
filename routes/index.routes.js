@@ -21,7 +21,7 @@ const routes = async ({ app }) => {
     app.use((req, res) => {
         return error({
             code: http_codes.notFound,
-            message: messages.notFound,
+            message: messages.routeNotFound,
             req,
             res
         })

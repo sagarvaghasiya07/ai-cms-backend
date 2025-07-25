@@ -1,11 +1,27 @@
 const mongoose = require('mongoose');
 const { Schema } = require('mongoose');
 const { schemas } = require('../constant/text.constant');
+const { generateRandomPublicId } = require('../utils/utils');
 
 let contentSchema = new Schema({
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: schemas.user,
+    contentId: {
+        type: String,
+        unique: true
+    },
+    userId: {
+        type: String,
+        required: true
+    },
+    prompt: {
+        type: String,
+        required: true
+    },
+    templateId: {
+        type: String,
+        required: true
+    },
+    wholeContent: {
+        type: String,
         required: true
     },
     title: {
@@ -18,12 +34,6 @@ let contentSchema = new Schema({
     },
     category: {
         type: String,
-        enum: ['social_media', 'email_subject', 'product_description', 'blog_post', 'ad_copy'],
-        required: true
-    },
-    template: {
-        type: String,
-        required: true
     },
     keywords: [{
         type: String
@@ -33,29 +43,37 @@ let contentSchema = new Schema({
     }],
     aiProvider: {
         type: String,
-        enum: ['openai', 'huggingface', 'groq'],
-        default: 'openai'
+        default: 'groq'
     },
-    prompt: {
-        type: String,
-        required: true
-    },
-    isPublic: {
+    isEdited: {
         type: Boolean,
         default: false
     },
-    usageCount: {
-        type: Number,
-        default: 0
+    isRegenerated: {
+        type: Boolean,
+        default: false
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
 });
 
+
+contentSchema.pre("save", async function (next) {
+    this.contentId = generateRandomPublicId("C", 9)
+    next()
+})
+
 // Index for search functionality
-contentSchema.index({ title: 'text', content: 'text', keywords: 'text' });
-contentSchema.index({ user: 1, category: 1 });
+contentSchema.index({ userId: 1, contentId: 1 });
 contentSchema.index({ createdAt: -1 });
+contentSchema.index({ title: 1 });
+contentSchema.index({ content: 1 });
+contentSchema.index({ category: 1 });
+contentSchema.index({ templateId: 1 });
 
 let contentModel = mongoose.model(schemas.content, contentSchema);
 

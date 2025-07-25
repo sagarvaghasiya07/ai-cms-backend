@@ -5,6 +5,7 @@ const { googleAuth } = require('../middleware/authWithStrategy.middleware');
 const { authMiddleware } = require('../middleware/auth.middleware');
 
 router.route("/auth/google").post(googleAuth, controller.loginWithGoogle)
-router.route("/getProfile").get(authMiddleware, controller.getProfile)
+router.route("/get-profile").get(authMiddleware, controller.getProfile)
+router.route("/get-statastic").get(authMiddleware, controller.statastic)
 
 module.exports = router;

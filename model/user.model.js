@@ -6,7 +6,6 @@ const { utcTime, generateRandomPublicId } = require('../utils/utils');
 let userSchema = new Schema({
     userId: {
         type: String,
-        index: true,
         unique: true
     },
     name: {
@@ -15,7 +14,8 @@ let userSchema = new Schema({
     },
     email: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     profile_url: {
         type: String,
@@ -26,6 +26,10 @@ let userSchema = new Schema({
     },
     singUpType: {
         type: String
+    },
+    role: {
+        type: String,
+        default: 'Content Creator'
     },
     lastLogin: {
         type: Date,
@@ -44,6 +48,7 @@ let userSchema = new Schema({
 });
 
 // Index for email and googleId
+userSchema.index({ userId: 1 });
 userSchema.index({ email: 1 });
 userSchema.index({ googleId: 1 });
 

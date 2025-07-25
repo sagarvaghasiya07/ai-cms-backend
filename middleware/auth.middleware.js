@@ -3,14 +3,15 @@ const { http_codes, messages } = require("../constant/text.constant");
 const { error } = require("../common/res.common");
 const userModel = require("../model/user.model");
 
-const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key';
+const { JWT_SECRET } = process.env;
 
 const authMiddleware = async (req, res, next) => {
     try {
         let Auth = req.headers['authorization']
         if (Auth && Auth.split(" ")[0] === 'Bearer') {
             Auth = Auth.split(" ")[1]
-            req.token = jwt.verify(Auth, SECRET_KEY)
+
+            req.token = jwt.verify(Auth, JWT_SECRET)
             const userDetail = await userModel.findOne({ userId: req.token.userId })
             req.user = userDetail
 

@@ -49,10 +49,8 @@ app.use(passport.session());
 // Logging
 app.use(logger(':remote-addr - :remote-user :method :url [:date[clf]] :status :res[content-length] - :response-time ms'));
 
-// Initialize database
+// Initialize database & routes
 db();
-
-// Routes
 Route({ app });
 
 let server = () => {
