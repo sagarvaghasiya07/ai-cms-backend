@@ -14,8 +14,7 @@ let userSchema = new Schema({
     },
     email: {
         type: String,
-        required: true,
-        index: true
+        required: true
     },
     profile_url: {
         type: String,

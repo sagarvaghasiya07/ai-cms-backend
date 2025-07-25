@@ -32,6 +32,9 @@ const templateSchema = new Schema({
     timestamps: true
 })
 
+// Index for email and googleId
+userSchema.index({ templateId: 1 });
+
 const templateModel = mongoose.model(schemas.template, templateSchema);
 
 const addDefaultTemplates = async () => {
