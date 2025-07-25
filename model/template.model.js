@@ -33,7 +33,7 @@ const templateSchema = new Schema({
 })
 
 // Index for email and googleId
-userSchema.index({ templateId: 1 });
+templateSchema.index({ templateId: 1 });
 
 const templateModel = mongoose.model(schemas.template, templateSchema);
 
