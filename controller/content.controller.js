@@ -101,10 +101,12 @@ const generateContent = async (req, res) => {
                     let endIndex = contentLines.length;
                     for (let i = 0; i < contentLines.length; i++) {
                         const contentLine = contentLines[i].trim();
+                        // Check for any section markers that indicate the end of content
                         if (contentLine.startsWith('**Tags:**') || contentLine.startsWith('Tags:') ||
                             contentLine.startsWith('**Title:**') || contentLine.startsWith('Title:') ||
                             contentLine.startsWith('**Category:**') || contentLine.startsWith('Category:') ||
-                            contentLine.startsWith('**Keywords:**') || contentLine.startsWith('Keywords:')) {
+                            contentLine.startsWith('**Keywords:**') || contentLine.startsWith('Keywords:') ||
+                            contentLine.startsWith('**Content:**') || contentLine.startsWith('Content:')) {
                             endIndex = i;
                             break;
                         }
@@ -112,8 +114,14 @@ const generateContent = async (req, res) => {
 
                     mainContent = contentLines.slice(0, endIndex).join('\n').trim();
 
-                    // Additional check to remove any remaining "**Content:**" or "Content:" from the extracted content
-                    mainContent = mainContent.replace(/^\*\*Content:\*\*\s*/, '').replace(/^Content:\s*/, '');
+                    // Clean up the content by removing any leading/trailing whitespace
+                    // and ensuring we don't have any remaining section markers
+                    mainContent = mainContent
+                        .replace(/^\*\*Content:\*\*\s*/, '')
+                        .replace(/^Content:\s*/, '')
+                        .replace(/\*\*Tags:\*\*.*$/s, '') // Remove any trailing tags section
+                        .replace(/Tags:.*$/s, '') // Remove any trailing tags section without markdown
+                        .trim();
                     break;
                 }
             }
