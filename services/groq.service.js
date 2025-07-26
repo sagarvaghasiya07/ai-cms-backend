@@ -8,7 +8,7 @@ const openai = new OpenAI({
 async function generategroqContent(prompt, model = "llama3-8b-8192") {
     try {
         const chatCompletion = await openai.chat.completions.create({
-            model, // Available Groq models: llama3-8b-8192, mixtral-8x7b-32768, gemma2-9b-it
+            model, // Available Groq models: llama3-8b-8192
             messages: [{ role: "user", content: prompt }],
             max_tokens: 1024,
             temperature: 0.7,

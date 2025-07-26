@@ -8,7 +8,7 @@ const { utcTime } = require("../utils/utils");
 
 const templateList = async (req, res) => {
     try {
-        const templateList = await templateModel.find({ isActive: true }).select('-_id templateId name');
+        const templateList = await templateModel.find({ isActive: true }).select('-_id templateId name usedCount');
         if (!templateList.length) {
             return error({
                 code: http_codes.badRequest,
